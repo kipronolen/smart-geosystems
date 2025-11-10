@@ -1,8 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔨 Starting build process...');
-console.log('📁 Current directory:', __dirname);
+console.log('🔨 Starting Vercel build process...');
 
 // Create dist directory
 const distDir = path.join(__dirname, 'dist');
@@ -11,57 +10,25 @@ if (!fs.existsSync(distDir)) {
     console.log('✅ Created dist directory');
 }
 
-// Check if files exist before copying
-const indexPath = path.join(__dirname, 'index.html');
-const sentMailTrackerPath = path.join(__dirname, 'public', 'sentmailtracker.html');
-
-console.log('🔍 Looking for index.html at:', indexPath);
-console.log('🔍 Looking for sentmailtracker.html at:', sentMailTrackerPath);
-
-// Copy index.html to dist
-if (fs.existsSync(indexPath)) {
-    fs.copyFileSync(indexPath, path.join(distDir, 'index.html'));
-    console.log('✅ Copied index.html');
-} else {
-    console.error('❌ index.html not found at:', indexPath);
+// Copy root index.html (already has correct paths for Vercel)
+const rootIndexPath = path.join(__dirname, 'index.html');
+if (fs.existsSync(rootIndexPath)) {
+    fs.copyFileSync(rootIndexPath, path.join(distDir, 'index.html'));
+    console.log('✅ Copied root index.html with Vercel paths');
 }
 
-// Copy and modify sentmailtracker.html to dist
+// Copy and modify sentmailtracker.html for Vercel
+const sentMailTrackerPath = path.join(__dirname, 'public', 'sentmailtracker.html');
 if (fs.existsSync(sentMailTrackerPath)) {
-    let sentMailTrackerContent = fs.readFileSync(sentMailTrackerPath, 'utf8');
+    let content = fs.readFileSync(sentMailTrackerPath, 'utf8');
 
-    // Fix paths for root-level deployment
-    sentMailTrackerContent = sentMailTrackerContent
-        .replace(/href="css\//g, 'href="public/css/')
-        .replace(/src="js\//g, 'src="public/js/')
-        .replace(/href="\.\.\/index\.html"/g, 'href="/index.html"')
-        .replace(/href="\.\.\/index\.html#/g, 'href="/index.html#');
+    // Convert relative paths to absolute paths for Vercel
+    content = content
+        .replace(/href="css\/style\.css"/g, 'href="/public/css/style.css"')
+        .replace(/src="js\/main\.js"/g, 'src="/public/js/main.js"');
 
-    fs.writeFileSync(path.join(distDir, 'sentmailtracker.html'), sentMailTrackerContent);
-    console.log('✅ Copied and modified sentmailtracker.html');
-} else {
-    console.error('❌ sentmailtracker.html not found at:', sentMailTrackerPath);
-    
-    // List what files are actually in the public directory
-    const publicDir = path.join(__dirname, 'public');
-    if (fs.existsSync(publicDir)) {
-        console.log('📂 Files in public directory:');
-        fs.readdirSync(publicDir).forEach(file => {
-            console.log('  -', file);
-        });
-    } else {
-        console.error('❌ Public directory not found at:', publicDir);
-    }
-    
-    // Try to create a basic sentmailtracker.html as fallback
-    const fallbackContent = `<!DOCTYPE html>
-<html>
-<head><title>SentMailTracker - Smart GeoSystems</title></head>
-<body><h1>SentMailTracker page will be available soon</h1></body>
-</html>`;
-    
-    fs.writeFileSync(path.join(distDir, 'sentmailtracker.html'), fallbackContent);
-    console.log('🔧 Created fallback sentmailtracker.html');
+    fs.writeFileSync(path.join(distDir, 'sentmailtracker.html'), content);
+    console.log('✅ Created sentmailtracker.html with Vercel paths');
 }
 
 // Copy entire public directory to dist
