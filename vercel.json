@@ -1,16 +1,22 @@
 {
   "version": 2,
-  "redirects": [
+  "builds": [
     {
-      "source": "/sentmailtracker",
-      "destination": "/public/sentmailtracker.html",
-      "permanent": false
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "outputDirectory": "dist"
+      }
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/sentmailtracker",
-      "destination": "/public/sentmailtracker.html"
+      "src": "/sentmailtracker",
+      "dest": "/sentmailtracker.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ]
 }
